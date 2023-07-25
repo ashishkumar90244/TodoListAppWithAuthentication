@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Page</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .login-container {
+      background-color: #fff;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+    .login-container h2 {
+      margin-bottom: 20px;
+    }
+    .login-container input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .login-container button {
+      background-color: #4CAF50;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      padding: 12px 20px;
+      cursor: pointer;
+      width: 100%;
+    }
+    .login-container p {
+      margin-top: 10px;
+    }
+    .login-container .signup-link,
+    .login-container .forgot-password-link {
+      color: #0066cc;
+      text-decoration: none;
+      margin-top: 10px;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h2>Login</h2>
+    <form action="submit" method="POST" id="form">
+      <input type="text" placeholder="Username or Email" name="user" id="user" required>
+      <input type="password" placeholder="Password" name="password" id="password" required>
+      <p id="errormsg"></p>
+     
+      <button type="submit">Log In</button>
+    </form>
+    <p>
+      <a href="signup" class="signup-link">Sign Up</a> | 
+      <a href="forgetpsd" class="forgot-password-link">Forgot Password</a>
+    </p>
+  </div>
+  <script>
+    const form  = document.getElementById("form");
+    const usernameNode = document.getElementById("user");
+    const passwordNode =  document.getElementById("password");
+    const errormsgNode =  document.getElementById("errormsg");
+    form.addEventListener("submit",function(event){
+        event.preventDefault();
+        const data={
+            user: usernameNode.value,
+            password: passwordNode.value
+        }
+        
+        fetch("/submit",{method:"POST",
+        headers:{"content-Type":"application/json"},
+        body:JSON.stringify(data)
+    })
+    .then(function(res){
+        if(res.status===200){
+            window.location.href= '/';
+        }
+        else if(res.status=== 500)
+          console.log("internal server error");
+        else if(res.status===401)
+          errormsgNode.innerText= "invalid username or password";
+          errormsgNode.style.color="red";
+    })
+    
+    .catch(function(err){
+        console.log(err);
+    })
+    
+    })
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .signup-container {
+      background-color: #fff;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+    .signup-container h2 {
+      margin-bottom: 20px;
+    }
+    .signup-container input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .signup-container button {
+      background-color: #4CAF50;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      padding: 12px 20px;
+      cursor: pointer;
+      width: 100%;
+    }
+    .signup-container p {
+      margin-top: 10px;
+    }
+    .signup-container .login-link {
+      color: #0066cc;
+      text-decoration: none;
+      margin-top: 10px;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <div class="signup-container">
+    <h2>Sign Up</h2>
+    <form action="register" id="formdata">
+      <input type="text" placeholder="Full Name" name="username" id="name" required>
+      <input type="email" placeholder="Email" name="email" id="email">
+      <input type="password" placeholder="Password" name="password" id="pwd" required>
+      <input type="password" placeholder="Confirm Password" name="cpassword" id="cpwd" required>
+      <p id="errormsg"></p>
+      <button type="submit" id="reg">Sign up</button>
+    </form>
+    <p>Already have an account? <a href="login" class="login-link">Log In</a></p>
+  </div>
+  <script>
+     const submitButtonNode = document.getElementById('reg');
+     const usernameNode = document.getElementById('name');
+     const emailNode = document.getElementById('email');
+     const passwordNode = document.getElementById('pwd');
+        const cpasswordNode = document.getElementById('cpwd');
+        const errormsgNode = document.getElementById('errormsg');
+     
+     const form = document.getElementById('formdata');
+     form.addEventListener('submit',function(e){
+        //alert('hi')
+        
+        e.preventDefault();
+        //console.log(passwordNode.value)
+        if(passwordNode.value!==cpasswordNode.value)
+        {
+            errormsgNode.innerText = "password does not match";
+            errormsgNode.style.color = "red";
+            return ;
+        }
+        const data = {
+        username:usernameNode.value,
+        password:passwordNode.value,
+        email:emailNode.value,
+
+    }
+
+    fetch("/register",{method:"POST",
+        headers:{"content-Type":"application/json"},
+        body:JSON.stringify(data)
+    })
+    .then(function(res){
+        if(res.status===200){
+            window.location.href= '/login';
+        }
+        else if(res.status=== 500)
+          console.log("internal server error");
+        else if(res.status===409){
+          res.text().then(function(data){
+            errormsgNode.innerText = data;
+            errormsgNode.style.color = 'red';
+        })}
+    })
+    
+    .catch(function(err){
+        console.log(err);
+    })
+     })
+  </script>
+</body>
+</html>
