@@ -52,6 +52,7 @@ function showTodoInUI(todo){
     anchor.style.color = "black";
   // anchor.type = "checkbox";
     todotextNode1.innerText = todo.todoContent;
+    
     //console.log(todotextNode1)
     todotextNode1.style.textAlign = "center";
     
@@ -92,17 +93,34 @@ function showTodoInUI(todo){
     checkbox.type = 'checkbox';
     checkbox.style.width='18px';
     checkbox.style.height='18px';
-    checkbox.addEventListener('click',function(){
+    if(todo.status === "accepted"){
+        
+        checkbox.checked = true;
+            todotextNode1.style.textDecoration = "line-through";
+    }
+    checkbox.addEventListener('change',function(){
+        let checked;
+        if(checkbox.checked)
+           checked="pending";
+        else
+           checked = "acceptd";
         fetch("/update-status",{method:"POST",
+        
         headers:{"content-Type":"application/json"},
-        body:JSON.stringify(todo),
+        body:JSON.stringify({
+            todoContent:todo.todoContent,
+            priority:todo.priority,
+            status:checked
+        })
         
     })
     .then(function(res){
         res.json().then(function(todos){
 
-            checkbox.disabled = true;
-            todotextNode1.style.textDecoration = "line-through";
+            if(todotextNode1.style.textDecoration === "line-through")
+                todotextNode1.style.textDecoration = "none";
+            else
+                todotextNode1.style.textDecoration = "line-through";
             //todoTextNode.remove();
                 
             }).catch(function(err){
@@ -123,6 +141,7 @@ function showTodoInUI(todo){
 fetch('/todo-data').then(function(res){
     if(res.status === 401){
         window.location.href = '/login';
+        return ;
     }
     res.json().then(function(todos){
         todos=JSON.parse(todos);
