@@ -44,7 +44,7 @@ app.post('/todo',function(req,res){
         return;
     }
     const todoContent = req.body;
-    readALLTodos(todoContent,writeTodo,res);
+    readALLTodos(todoContent,writeTodo,req,res);
     
 //     fs.readFile('./treasure.txt',"utf-8",(err,data)=>{
 //         if(err){
@@ -103,7 +103,13 @@ app.get('/todo-data',function(req,res){
             res.status(500).json(err);
             return;
         }
-        res.status(200).json(data);
+        if(!data)
+          data="{}";
+        data = JSON.parse(data);
+        if(!(req.session.username in data))
+            res.status(200).json("[]");
+        else 
+            res.status(200).json(JSON.stringify(data[req.session.username]));
 
     })
 })
@@ -140,21 +146,23 @@ app.post('/remove-data',function(req,res){
         const todo = req.body;
         //console.log(todo)
         data = JSON.parse(data);
+        let todoArray = data[req.session.username];
         let updated_data = [];
         //let removedTodo ;
-        for(let i =0;i<data.length;i++){
-            if(data[i].todoContent!=todo.todoContent)
-                updated_data.push(data[i]);
+        for(let i =0;i<todoArray.length;i++){
+            if(todoArray[i].todoContent!=todo.todoContent)
+                updated_data.push(todoArray[i]);
             
         }
+        data[req.session.username] = updated_data;
         //console.log(todo.a)
         
-        fs.writeFile("./treasure.txt",JSON.stringify(updated_data),(err)=>{
+        fs.writeFile("./treasure.txt",JSON.stringify(data),(err)=>{
             if(err){
                 res.status(500).json("Internal error");
                 return;
             }
-            res.status(200).json(JSON.stringify(updated_data));
+            res.status(200).json(JSON.stringify("removed"));
         })
     })
 })
@@ -168,20 +176,29 @@ app.post('/update-status',function(req,res){
         const todo = req.body;
         console.log(todo);
         data = JSON.parse(data);
+        let todoArray = data[req.session.username];
+        let status;
+        if(todo.status === "pending")
+            status = "accepted";
+        else
+           status = "pending";
+
         let updated_data=[];
-        for(let i=0;i<data.length;i++){
-            if(data[i].todoContent===todo.todoContent){
+        for(let i=0;i<todoArray.length;i++){
+            if(todoArray[i].todoContent===todo.todoContent){
                 updated_data.push({
-                    todoContent:data[i].todoContent,
-                    priority:data[i].priority,
-                    status:"accepted"
+                    todoContent:todoArray[i].todoContent,
+                    priority:todoArray[i].priority,
+                    status:status
                 })
             }
             else{
-                updated_data.push(data[i]);
+                updated_data.push(todoArray[i]);
             }
         }
-        fs.writeFile('./treasure.txt',JSON.stringify(updated_data),(err)=>{
+        console.log(updated_data,"updated");
+        data[req.session.username] = updated_data;
+        fs.writeFile('./treasure.txt',JSON.stringify(data),(err)=>{
             if(err){
                 res.status(500).json("Internal server error");
                 return ;
@@ -261,11 +278,11 @@ app.post('/register', function(req, res){
     
 });
 
-app.listen(3000,()=>{
+app.listen(3000,'0.0.0.0',()=>{
     console.log('listening at the port 3000');
 })
 
-function readALLTodos (todo,callback,res) {
+function readALLTodos (todo,callback,req,res) {
 
     fs.readFile("./treasure.txt", "utf-8", function (err, data) {
     
@@ -283,14 +300,16 @@ function readALLTodos (todo,callback,res) {
     }
 
     
-    if (data.length==0) {data = "[]"; 
+    if (data.length==0) {data = "{}"; 
     
     }
     
     try {
     
     data = JSON.parse(data); 
-    data.push(todo);
+    if(!(req.session.username in data))
+        data[req.session.username]  = [];
+    data[req.session.username].push(todo);
     callback(null, data,res); } catch (err) { callback(err,data,res);
     }
     })
